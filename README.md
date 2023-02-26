@@ -1,2 +1,2 @@
-# soil_respiration_2023
+# Soil Respiration Project
 Repository of the soil respiration project
