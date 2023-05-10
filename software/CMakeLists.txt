@@ -11,9 +11,15 @@ project(soil_respiration_2023)
 
 include_directories(
                       inc/
+                      lib/
                       )
 
 target_sources(app PRIVATE
     src/main.c
     inc/wifi.c
+    #inc/mqtt.c
+    inc/sockets.c
+    inc/sensor.c
+    lib/scd30.c
+    lib/sensirion_common.c
 )

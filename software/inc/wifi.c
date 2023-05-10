@@ -11,7 +11,10 @@
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/wifi_mgmt.h>
 #include <zephyr/net/net_event.h>
+#include <zephyr/net/net_mgmt.h>
 #include <errno.h>
+#include <zephyr/logging/log.h>
+LOG_MODULE_DECLARE(soil_respiration, LOG_LEVEL_DBG);
 
 #define NET_SSID        "Toms Phone"
 #define PSK             "tomsalpietro"
@@ -19,8 +22,12 @@
 static struct net_mgmt_event_callback wifiCallback;
 static struct net_mgmt_event_callback ipv4Callback;
 
-static K_SEM_DEFINE(wifiSem, 0, 1);
-static K_SEM_DEFINE(ipv4Sem, 0, 1);
+//static K_SEM_DEFINE(wifiSem, 0, 1);
+//static K_SEM_DEFINE(ipv4Sem, 0, 1);
+
+struct k_sem wifiSem;
+struct k_sem ipv4Sem;
+
 
 static struct net_mgmt_event_callback wifi_cb;
 static struct net_mgmt_event_callback ipv4_cb;
@@ -190,6 +197,10 @@ void thread_wifi_entry(void) {
     
     printk("--START UP--\r\n");
 
+    //initialise semaphores
+    k_sem_init(&wifiSem, 0, 1);
+    k_sem_init(&ipv4Sem, 0, 1);
+
     //initialise callbacks
     net_mgmt_init_event_callback(&ipv4_cb, wifi_mgmt_event_handler, NET_EVENT_IPV4_ADDR_ADD);
     net_mgmt_init_event_callback(&wifi_cb, wifi_mgmt_event_handler,
@@ -201,12 +212,18 @@ void thread_wifi_entry(void) {
     //connect to network
     wifi_connect();
     k_sem_take(&wifiSem, K_FOREVER);
-    k_sleep(K_SECONDS(5));
-    //wifi_status();
-    //k_sem_take(&ipv4Sem, K_FOREVER);
+    //k_sleep(K_SECONDS(5));
+
+    k_sem_take(&ipv4Sem, K_FOREVER);
+
     printk("Ready...\n\n");
+    wifi_status();
+    while (1) {
+        k_msleep(500);
+    }
+
     k_sleep(K_SECONDS(15));
+
     wifi_disconnect();
-    printk("EOL\r\n");
     
 }
