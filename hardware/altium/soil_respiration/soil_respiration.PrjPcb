@@ -47,11 +47,11 @@ AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
 AnnotateSuffix=
 AnnotateScope=All
-AnnotateOrder=-1
+AnnotateOrder=0
 DoLibraryUpdate=1
 DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=1
-ClassGenCCAutoRoomEnabled=1
+ClassGenCCAutoEnabled=0
+ClassGenCCAutoRoomEnabled=0
 ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
@@ -108,6 +108,103 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=QUPUPVQO
 
+[Document5]
+DocumentPath=soi_respiration_job.OutJob
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=1
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=
+
+[GeneratedDocument1]
+DocumentPath=Project Outputs for soil_respiration\BOM\Bill of Materials-soil_respiration.xlsx
+DItemRevisionGUID=
+
+[GeneratedDocument2]
+DocumentPath=Project Outputs for soil_respiration\Design Rule Check - main_board.html
+DItemRevisionGUID=
+
+[GeneratedDocument3]
+DocumentPath=Project Outputs for soil_respiration\NC Drill\main_board.DRR
+DItemRevisionGUID=
+
+[GeneratedDocument4]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.EXTREP
+DItemRevisionGUID=
+
+[GeneratedDocument5]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.GBL
+DItemRevisionGUID=
+
+[GeneratedDocument6]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.GBO
+DItemRevisionGUID=
+
+[GeneratedDocument7]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.GBP
+DItemRevisionGUID=
+
+[GeneratedDocument8]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.GBS
+DItemRevisionGUID=
+
+[GeneratedDocument9]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.GM3
+DItemRevisionGUID=
+
+[GeneratedDocument10]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.GTL
+DItemRevisionGUID=
+
+[GeneratedDocument11]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.GTO
+DItemRevisionGUID=
+
+[GeneratedDocument12]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.GTP
+DItemRevisionGUID=
+
+[GeneratedDocument13]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.GTS
+DItemRevisionGUID=
+
+[GeneratedDocument14]
+DocumentPath=Project Outputs for soil_respiration\NC Drill\main_board.LDP
+DItemRevisionGUID=
+
+[GeneratedDocument15]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.REP
+DItemRevisionGUID=
+
+[GeneratedDocument16]
+DocumentPath=Project Outputs for soil_respiration\Gerber\main_board.RUL
+DItemRevisionGUID=
+
+[GeneratedDocument17]
+DocumentPath=Project Outputs for Free Documents\ExportSTEP\main_board.step
+DItemRevisionGUID=
+
+[GeneratedDocument18]
+DocumentPath=Project Outputs for soil_respiration\ExportSTEP\main_board.step
+DItemRevisionGUID=
+
+[GeneratedDocument19]
+DocumentPath=Project Outputs for soil_respiration\NC Drill\main_board.TXT
+DItemRevisionGUID=
+
+[GeneratedDocument20]
+DocumentPath=Project Outputs for soil_respiration\Pick Place\Pick Place for main_board.txt
+DItemRevisionGUID=
+
 [Configuration1]
 Name=Sources
 ParameterCount=0
@@ -117,6 +214,9 @@ Variant=[No Variations]
 OutputJobsCount=0
 ContentTypeGUID=CB6F2064-E317-11DF-B822-12313F0024A2
 ConfigurationType=Source
+
+[Generic_EDE]
+OutputDir=
 
 [OutputGroup1]
 Name=Netlist Outputs
@@ -1032,6 +1132,48 @@ SelectedOnly=0
 UpdateVariants=1
 UpdateToLatestRevision=1
 PartTypes=0
+ComponentLibIdentifierKind0=Library Name And Type
+ComponentLibraryIdentifier0=main_board_Schlib1.SchLib
+ComponentDesignItemID0=3503G2B1K0FTDF
+ComponentSymbolReference0=3503G2B1K0FTDF
+ComponentUpdate0=1
+ComponentIsDeviceSheet0=0
+ComponentLibIdentifierKind1=Library Name And Type
+ComponentLibraryIdentifier1=main_board_Schlib1.SchLib
+ComponentDesignItemID1=3bc925449376181038e59eaffc5286c
+ComponentSymbolReference1=3bc925449376181038e59eaffc5286c
+ComponentUpdate1=1
+ComponentIsDeviceSheet1=0
+ComponentLibIdentifierKind2=Library Name And Type
+ComponentLibraryIdentifier2=main_board_Schlib1.SchLib
+ComponentDesignItemID2=ESP32-DEVKITC-32E
+ComponentSymbolReference2=ESP32-DEVKITC-32E
+ComponentUpdate2=1
+ComponentIsDeviceSheet2=0
+ComponentLibIdentifierKind3=Library Name And Type
+ComponentLibraryIdentifier3=main_board_Schlib1.SchLib
+ComponentDesignItemID3=PNSC-ALQ105-LQ-5-2000x1000x1600-5
+ComponentSymbolReference3=PNSC-ALQ105-LQ-5-2000x1000x1600-5
+ComponentUpdate3=1
+ComponentIsDeviceSheet3=0
+ComponentLibIdentifierKind4=Library Name And Type
+ComponentLibraryIdentifier4=main_board_Schlib1.SchLib
+ComponentDesignItemID4=S1A
+ComponentSymbolReference4=S1A
+ComponentUpdate4=1
+ComponentIsDeviceSheet4=0
+ComponentLibIdentifierKind5=Library Name And Type
+ComponentLibraryIdentifier5=main_board_Schlib1.SchLib
+ComponentDesignItemID5=SCD30
+ComponentSymbolReference5=SCD30
+ComponentUpdate5=1
+ComponentIsDeviceSheet5=0
+ComponentLibIdentifierKind6=Library Name And Type
+ComponentLibraryIdentifier6=main_board_Schlib1.SchLib
+ComponentDesignItemID6=TIP120G
+ComponentSymbolReference6=TIP120G
+ComponentUpdate6=1
+ComponentIsDeviceSheet6=0
 FullReplace=1
 UpdateDesignatorLock=1
 UpdatePartIDLock=1
@@ -1045,6 +1187,209 @@ RemoveParameters=0
 AddModels=1
 RemoveModels=1
 UpdateCurrentModels=1
+ParameterName0=Accuracy
+ParameterUpdate0=1
+ParameterName1=Case/Package
+ParameterUpdate1=1
+ParameterName2=Category
+ParameterUpdate2=1
+ParameterName3=Coil Voltage
+ParameterUpdate3=1
+ParameterName4=Collector Base Voltage (VCBO)
+ParameterUpdate4=1
+ParameterName5=Collector Emitter Breakdown Voltage
+ParameterUpdate5=1
+ParameterName6=Collector Emitter Saturation Voltage
+ParameterUpdate6=1
+ParameterName7=Collector Emitter Voltage (VCEO)
+ParameterUpdate7=1
+ParameterName8=Collector-emitter Voltage-Max
+ParameterUpdate8=1
+ParameterName9=Color
+ParameterUpdate9=1
+ParameterName10=Comment
+ParameterUpdate10=1
+ParameterName11=Component Kind
+ParameterUpdate11=1
+ParameterName12=ComponentLink1Description
+ParameterUpdate12=1
+ParameterName13=ComponentLink1URL
+ParameterUpdate13=1
+ParameterName14=ComponentLink2Description
+ParameterUpdate14=1
+ParameterName15=ComponentLink2URL
+ParameterUpdate15=1
+ParameterName16=ComponentLink3Description
+ParameterUpdate16=1
+ParameterName17=ComponentLink3URL
+ParameterUpdate17=1
+ParameterName18=ComponentLink4Description
+ParameterUpdate18=1
+ParameterName19=ComponentLink4URL
+ParameterUpdate19=1
+ParameterName20=ComponentLink5Description
+ParameterUpdate20=1
+ParameterName21=ComponentLink5URL
+ParameterUpdate21=1
+ParameterName22=Connector Type
+ParameterUpdate22=1
+ParameterName23=Contact Finish - Mating
+ParameterUpdate23=1
+ParameterName24=Contact Gender
+ParameterUpdate24=1
+ParameterName25=Contact Material
+ParameterUpdate25=1
+ParameterName26=Contact Mating Length
+ParameterUpdate26=1
+ParameterName27=Contact Plating
+ParameterUpdate27=1
+ParameterName28=Contact Shape
+ParameterUpdate28=1
+ParameterName29=Contact Type
+ParameterUpdate29=1
+ParameterName30=Continuous Collector Current
+ParameterUpdate30=1
+ParameterName31=Current Rating
+ParameterUpdate31=1
+ParameterName32=DatasheetVersion
+ParameterUpdate32=1
+ParameterName33=Description
+ParameterUpdate33=1
+ParameterName34=Electrical Life
+ParameterUpdate34=1
+ParameterName35=Emitter Base Voltage (VEBO)
+ParameterUpdate35=1
+ParameterName36=Fastening Type
+ParameterUpdate36=1
+ParameterName37=Flammability Rating
+ParameterUpdate37=1
+ParameterName38=Gender
+ParameterUpdate38=1
+ParameterName39=Height
+ParameterUpdate39=1
+ParameterName40=hFE Min
+ParameterUpdate40=1
+ParameterName41=Housing Material
+ParameterUpdate41=1
+ParameterName42=Insulation Color
+ParameterUpdate42=1
+ParameterName43=Insulation Material
+ParameterUpdate43=1
+ParameterName44=Insulation Resistance
+ParameterUpdate44=1
+ParameterName45=Lead Free
+ParameterUpdate45=1
+ParameterName46=Length
+ParameterUpdate46=1
+ParameterName47=Library Reference
+ParameterUpdate47=1
+ParameterName48=Manufacturer
+ParameterUpdate48=1
+ParameterName49=Manufacturer Part Number
+ParameterUpdate49=1
+ParameterName50=Max Collector Current
+ParameterUpdate50=1
+ParameterName51=Max Operating Temperature
+ParameterUpdate51=1
+ParameterName52=Max Power Dissipation
+ParameterUpdate52=1
+ParameterName53=Max Switching Current
+ParameterUpdate53=1
+ParameterName54=Max Switching Voltage
+ParameterUpdate54=1
+ParameterName55=Mechanical Life(Min.operation)
+ParameterUpdate55=1
+ParameterName56=Min Operating Temperature
+ParameterUpdate56=1
+ParameterName57=Mount
+ParameterUpdate57=1
+ParameterName58=Mounting Technology
+ParameterUpdate58=1
+ParameterName59=Nominal Operating Power
+ParameterUpdate59=1
+ParameterName60=Number of Contacts
+ParameterUpdate60=1
+ParameterName61=Number of Elements
+ParameterUpdate61=1
+ParameterName62=Number of Pins
+ParameterUpdate62=1
+ParameterName63=Number of Positions
+ParameterUpdate63=1
+ParameterName64=Number of Rows
+ParameterUpdate64=1
+ParameterName65=Operating Supply Current
+ParameterUpdate65=1
+ParameterName66=Package Quantity
+ParameterUpdate66=1
+ParameterName67=PackageDescription
+ParameterUpdate67=1
+ParameterName68=PackageReference
+ParameterUpdate68=1
+ParameterName69=PackageVersion
+ParameterUpdate69=1
+ParameterName70=Packaging
+ParameterUpdate70=1
+ParameterName71=Packing
+ParameterUpdate71=1
+ParameterName72=PartNumber
+ParameterUpdate72=1
+ParameterName73=Pb-Free
+ParameterUpdate73=1
+ParameterName74=Pitch
+ParameterUpdate74=1
+ParameterName75=Polarity
+ParameterUpdate75=1
+ParameterName76=Power Dissipation
+ParameterUpdate76=1
+ParameterName77=Pricing 1
+ParameterUpdate77=1
+ParameterName78=Radiation Hardening
+ParameterUpdate78=1
+ParameterName79=Reach SVHC Compliant
+ParameterUpdate79=1
+ParameterName80=RoHS
+ParameterUpdate80=1
+ParameterName81=RoHS Compliant
+ParameterUpdate81=1
+ParameterName82=Series
+ParameterUpdate82=1
+ParameterName83=Stock 1
+ParameterUpdate83=1
+ParameterName84=Supplier 1
+ParameterUpdate84=1
+ParameterName85=Supplier Part Number 1
+ParameterUpdate85=1
+ParameterName86=Termination
+ParameterUpdate86=1
+ParameterName87=Voltage Rating
+ParameterUpdate87=1
+ParameterName88=Voltage Rating (DC)
+ParameterUpdate88=1
+ParameterName89=Width
+ParameterUpdate89=1
+ModelTypeGroup0=PCBLIB
+ModelTypeUpdate0=1
+ModelType0=PCBLIB
+ModelName0=1206-1k
+ModelUpdate0=1
+ModelType1=PCBLIB
+ModelName1=ALQ105
+ModelUpdate1=1
+ModelType2=PCBLIB
+ModelName2=ESP32
+ModelUpdate2=1
+ModelType3=PCBLIB
+ModelName3=HDR2x1
+ModelUpdate3=1
+ModelType4=PCBLIB
+ModelName4=S1A
+ModelUpdate4=1
+ModelType5=PCBLIB
+ModelName5=SCD30
+ModelUpdate5=1
+ModelType6=PCBLIB
+ModelName6=TIP120G
+ModelUpdate6=1
 
 [DatabaseUpdateOptions]
 SelectedOnly=0

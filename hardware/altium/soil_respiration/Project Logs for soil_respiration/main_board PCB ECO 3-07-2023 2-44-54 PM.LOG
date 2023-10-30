@@ -1,0 +1,8 @@
+Removed Pin From Net: NetName=GND Pin=U2-20
+Removed Pin From Net: NetName=SCD30_SCL Pin=U2-22
+Removed Pin From Net: NetName=SCD30_SDA Pin=U2-25
+Removed Pin From Net: NetName=GND Pin=U2-26
+Added Pin To Net: NetName=GND Pin=U2-32
+Added Pin To Net: NetName=SCD30_SDA Pin=U2-33
+Added Pin To Net: NetName=SCD30_SCL Pin=U2-36
+Added Pin To Net: NetName=GND Pin=U2-38

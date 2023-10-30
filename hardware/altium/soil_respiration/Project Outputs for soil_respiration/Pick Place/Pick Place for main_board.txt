@@ -1,0 +1,24 @@
+Altium Designer Pick and Place Locations
+C:\Users\User\Documents\soil_respiration_2023\hardware\altium\soil_respiration\Project Outputs for soil_respiration\Pick Place\Pick Place for main_board.txt
+
+========================================================================================================================
+File Design Information:
+
+Date:       14/07/23
+Time:       13:04
+Revision:   ca97ab3074fdb2cfbc1c384914c215f0e3e3cb59
+Variant:    No variations
+Units used: mil
+
+Designator Comment         Layer    Footprint Center-X(mil) Center-Y(mil) Rotation Description                                                                                                 
+U2         ESP32-WROOM-32E TopLayer ESP32     6732.283      3720.472      0        "ESP32-WROOM-32E 4MB Flash"                                                                                 
+K1         ALQ105          TopLayer ALQ105    4768.110      4401.968      0        "LQ Relays, 5 V Coil Voltage, 400 mW Nominal Operating Power, -40 to 85 degC, 5-Pin LQ, Carton, Case, RoHS" 
+U1         SCD30           TopLayer SCD30     6339.370      1933.071      0        "SCD30 Series 5.5 V 75 mA ±3% Carbon Dioxide (CO2) Sensor Module"                                           
+R2         1k              TopLayer 1206-1K   6003.937      3877.953      90       "Res 1K Ohm 1% 2W 1206"                                                                                     
+R1         1k              TopLayer 1206-1K   6003.937      4330.709      90       "Res 1K Ohm 1% 2W 1206"                                                                                     
+Q2         TIP120          TopLayer TIP120G   5493.701      4094.488      270      "ON Semi TIP120G NPN Darlington Transistor 8 A 60 V HFE: 1000 3-Pin TO-220"                                 
+Q1         TIP120          TopLayer TIP120G   5490.551      4566.929      270      "ON Semi TIP120G NPN Darlington Transistor 8 A 60 V HFE: 1000 3-Pin TO-220"                                 
+K2         ALQ105          TopLayer ALQ105    4763.780      3838.583      0        "LQ Relays, 5 V Coil Voltage, 400 mW Nominal Operating Power, -40 to 85 degC, 5-Pin LQ, Carton, Case, RoHS" 
+J1         "2-Pin Header"  TopLayer HDR2X1    5522.441      3759.843      90       "CONN HEADER VERT 2POS 2.54MM"                                                                              
+D2         "50V 1A Diode"  TopLayer S1A       4212.598      3838.583      270      "Diode Gen Purp 50V 1A Sma"                                                                                 
+D1         "50V 1A Diode"  TopLayer S1A       4212.598      4409.449      270      "Diode Gen Purp 50V 1A Sma"                                                                                 
