@@ -7,3 +7,27 @@
  &wifi {
 	status = "okay";
 };
+
+/ {
+	chosen {
+	   zephyr,code-partition = &slot0_partition;
+	};
+ };
+
+ / {
+    aliases {
+        sw1 = &motor0;
+        sw2 = &motor1;
+    };
+    gpio_keys {
+        compatible = "gpio-keys";
+        motor0: motor_0 {
+            gpios = <&gpio0 25 GPIO_ACTIVE_HIGH>;
+            label = "Motor +";
+        };
+        motor1: motor_1 {
+            gpios = <&gpio0 26 GPIO_ACTIVE_HIGH>;
+            label = "Motor -";
+        };
+    };
+};

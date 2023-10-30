@@ -14,13 +14,24 @@
 #include <zephyr/net/mqtt.h>
 #include <zephyr/net/socket.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/sys/util.h>
+#include <zephyr/sys/reboot.h>
+#include <zephyr/data/json.h>
 
 #include "wifi.h"
+#include "sensor.h"
+#include "ota.h"
+#include "motor.h"
+
+
 
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(net_mqtt_publisher_sample, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(net_mqtt_publisher, LOG_LEVEL_DBG);
 
 #if defined(CONFIG_MQTT_LIB_WEBSOCKET)
 /* Making RX buffer large enough that the full IPv6 packet can fit into it */
@@ -42,7 +53,10 @@ static uint8_t temp_ws_rx_buf[MQTT_LIB_WEBSOCKET_RECV_BUF_LEN];
 #define APP_CONNECT_TIMEOUT_MS  2000
 #define APP_SLEEP_MSECS		    500
 #define APP_CONNECT_TRIES	    10
-#define APP_MQTT_BUFFER_SIZE	128
+#define APP_MQTT_BUFFER_SIZE	4096
+
+#define SIMPLE_HTTP_OTA_MAJOR_VERSION 2
+#define SIMPLE_HTTP_OTA_MINOR_VERSION 2
 
 #define RC_STR(rc) ((rc) == 0 ? "OK" : "ERROR")
 
@@ -54,6 +68,14 @@ static uint8_t temp_ws_rx_buf[MQTT_LIB_WEBSOCKET_RECV_BUF_LEN];
 
 static uint8_t rx_buf[APP_MQTT_BUFFER_SIZE];
 static uint8_t tx_buf[APP_MQTT_BUFFER_SIZE];
+static uint8_t buffer[APP_MQTT_BUFFER_SIZE];
+
+uint8_t flagOta = 0;
+
+#if defined(CONFIG_DNS_RESOLVER)
+static struct zsock_addrinfo hints;
+static struct zsock_addrinfo *haddr;
+#endif
 
 // MQTT client struct
 static struct mqtt_client client_ctx;
@@ -61,15 +83,40 @@ static struct mqtt_client client_ctx;
 // MQTT BROKER parameters
 static struct sockaddr_storage broker;
 
-#if defined(CONFIG_SOCKS)
-static struct sockaddr socks5_proxy;
-#endif
+static uint8_t otaTopic[] = "fota/";
+static uint8_t periodTopic[] = "period/";
+static uint8_t topic[] = "sensor/#";
+static struct mqtt_topic subs_topic;
+static struct mqtt_subscription_list subs_list;
 
 static struct zsock_pollfd fds[1];
 static int nfds;
+static bool connected;
 
-//connected parameter
-static bool connected = false;
+struct period_JSON {
+    const char *unit;
+    const char  *value;
+};
+
+static const struct json_obj_descr period_descr[] = {
+	JSON_OBJ_DESCR_PRIM(struct period_JSON, unit, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct period_JSON, value, JSON_TOK_STRING),
+};
+
+struct period_JSON periodResults;
+
+struct fota_JSON {
+    const char *unit;
+    const char  *value;
+};
+
+static const struct json_obj_descr fota_descr[] = {
+	JSON_OBJ_DESCR_PRIM(struct fota_JSON, unit, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct fota_JSON, value, JSON_TOK_STRING),
+};
+
+struct fota_JSON fotaResults;
+
 
 static void prepare_fds(struct mqtt_client *client)
 {
@@ -99,6 +146,37 @@ static int wait(int timeout)
 	return ret;
 }
 
+
+static ssize_t handle_published_message(const struct mqtt_publish_param *pub)
+{
+	int ret;
+	size_t received = 0u;
+	const size_t message_size = pub->message.payload.len;
+	const bool discarded = message_size > APP_MQTT_BUFFER_SIZE;
+
+	LOG_INF("RECEIVED on topic \"%s\" [ id: %u qos: %u ] payload: %u / %u B",
+		(const char *)pub->message.topic.topic.utf8, pub->message_id,
+		pub->message.topic.qos, message_size, APP_MQTT_BUFFER_SIZE);
+
+	while (received < message_size) {
+		uint8_t *p = discarded ? buffer : &buffer[received];
+
+		ret = mqtt_read_publish_payload_blocking(&client_ctx, p, APP_MQTT_BUFFER_SIZE);
+		if (ret < 0) {
+			return ret;
+		}
+
+		received += ret;
+	}
+
+	if (!discarded) {
+		LOG_HEXDUMP_DBG(buffer, MIN(message_size, 256u), "Received payload:");
+	}
+
+	return discarded ? -ENOMEM : received;
+}
+
+
 /*
     MQTT event handler
 */
@@ -106,8 +184,6 @@ void mqtt_evt_handler(struct mqtt_client *client,
                       const struct mqtt_evt *evt)
 {
     int err;
-    printk("IN CALLBACK!\r\n");
-
 	switch (evt->type) {
 	case MQTT_EVT_CONNACK:
 		if (evt->result != 0) {
@@ -171,10 +247,40 @@ void mqtt_evt_handler(struct mqtt_client *client,
 		LOG_INF("PINGRESP packet");
 		break;
 
+	case MQTT_EVT_PUBLISH:
+		LOG_INF("PUBLISH received from TAGO");
+		const struct mqtt_publish_param *pub = &evt->param.publish;
+		
+		handle_published_message(pub);
+
+		
+		if (!strcmp((const char *)pub->message.topic.topic.utf8, "period/")) {
+			// read period payload and update
+			json_obj_parse(buffer, sizeof(buffer), period_descr, ARRAY_SIZE(period_descr), &periodResults);
+			LOG_INF("Sensor period changed to: %s minutes", periodResults.value);
+			period = atoi(periodResults.value) * 1000 * 60;
+
+		} else if (!strcmp((const char *)pub->message.topic.topic.utf8, "fota/") || !strcmp((const char *)pub->message.topic.topic.utf8, "fota/d/")) {
+			//FOTA NOW
+			
+			json_obj_parse(buffer, sizeof(buffer), fota_descr, ARRAY_SIZE(fota_descr), &fotaResults);
+			
+			//strncpy(host_ip, fotaResults.value, strlen(fotaResults.value));
+			LOG_INF("FOTA initiated...");
+			flagOta = 1;
+		} else {
+			//do nothing;
+		}
+
+
+		break;
+
 	default:
 		break;
 	}
 }
+
+
 
 static void broker_init(void) {
 
@@ -182,15 +288,16 @@ static void broker_init(void) {
 
 	broker4->sin_family = AF_INET;
 	broker4->sin_port = htons(SERVER_PORT);
+#if defined(CONFIG_DNS_RESOLVER)
+	net_ipaddr_copy(&broker4->sin_addr,
+			&net_sin(haddr->ai_addr)->sin_addr);
+#else
 	zsock_inet_pton(AF_INET, SERVER_ADDR, &broker4->sin_addr);
-#if defined(CONFIG_SOCKS)
-	struct sockaddr_in *proxy4 = (struct sockaddr_in *)&socks5_proxy;
-
-	proxy4->sin_family = AF_INET;
-	proxy4->sin_port = htons(SOCKS5_PROXY_PORT);
-	zsock_inet_pton(AF_INET, SOCKS5_PROXY_ADDR, &proxy4->sin_addr);
 #endif
+
 }
+
+
 
 
 /*
@@ -226,16 +333,152 @@ static int connect_to_broker(struct mqtt_client *client)
 	return -EINVAL;
 }
 
+#if defined(CONFIG_DNS_RESOLVER)
+static int get_mqtt_broker_addrinfo(void)
+{
+	int retries = 3;
+	int rc = -EINVAL;
+
+	while (retries--) {
+		hints.ai_family = AF_INET;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_protocol = 0;
+
+		rc = zsock_getaddrinfo("mqtt.tago.io", "1883",
+				       &hints, &haddr);
+		if (rc == 0) {
+			LOG_INF("DNS resolved for %s:%d",
+			"mqtt.tago.io",
+			1883);
+
+			return 0;
+		}
+
+		LOG_ERR("DNS not resolved for %s:%d, retrying",
+			"mqtt.tago.io",
+			1883);
+	}
+
+	return rc;
+}
+#endif
+
+static void subscribe_ota(struct mqtt_client *client)
+{
+	int err;
+
+	/* subscribe */
+	subs_topic.topic.utf8 = otaTopic;
+	subs_topic.topic.size = strlen(otaTopic);
+	subs_list.list = &subs_topic;
+	subs_list.list_count = 1U;
+	subs_list.message_id = 1U;
+	LOG_INF("Subscribing to %hu topic(s)", subs_list.list_count);
+
+	err = mqtt_subscribe(client, &subs_list);
+	if (err) {
+		LOG_ERR("Failed on topic %s", otaTopic);
+	}
+}
+
+static void subscribe_period(struct mqtt_client *client) {
+	int err;
+	/* subscribe */
+	subs_topic.topic.utf8 = periodTopic;
+	subs_topic.topic.size = strlen(periodTopic);
+	subs_list.list = &subs_topic;
+	subs_list.list_count = 1U;
+	subs_list.message_id = 1U;
+	LOG_INF("Subscribing to %hu topic(s)", subs_list.list_count);
+
+	err = mqtt_subscribe(client, &subs_list);
+	if (err) {
+		LOG_ERR("Failed on topic %s", otaTopic);
+	}
+}
+
+static int publish(struct mqtt_client *client, enum mqtt_qos qos, uint8_t topic[])
+{
+	struct mqtt_publish_param param;
+	uint8_t payload[1280];
+	(void)snprintf(payload, sizeof(payload),
+		       "%f,%f,%f,",
+		       (double)sensorData[0], (double)sensorData[1], (double)sensorData[2]);
+
+	param.message.topic.qos = qos;
+	param.message.topic.topic.utf8 = topic;
+	param.message.topic.topic.size =
+			strlen(param.message.topic.topic.utf8);
+	param.message.payload.data = payload;
+	param.message.payload.len =
+			strlen(param.message.payload.data);
+	param.message_id = 69;
+	param.dup_flag = 0U;
+	param.retain_flag = 0U;
+
+	return mqtt_publish(client, &param);
+}
+
+static int publish_fw(struct mqtt_client *client, enum mqtt_qos qos, uint8_t topic[])
+{
+	struct mqtt_publish_param param;
+	uint8_t payload[1280];
+	(void)snprintf(payload, sizeof(payload),
+		       "%d.%d",
+		       (int)SIMPLE_HTTP_OTA_MAJOR_VERSION, (int)SIMPLE_HTTP_OTA_MINOR_VERSION);
+
+	param.message.topic.qos = qos;
+	param.message.topic.topic.utf8 = topic;
+	param.message.topic.topic.size =
+			strlen(param.message.topic.topic.utf8);
+	param.message.payload.data = payload;
+	param.message.payload.len =
+			strlen(param.message.payload.data);
+	param.message_id = 69;
+	param.dup_flag = 0U;
+	param.retain_flag = 0U;
+
+	return mqtt_publish(client, &param);
+}
+
+
+
+
+
 
 int thread_mqtt_entry(void) {
 
-    int val;
+    int rc, val, timeout;
+	int ret;
     //init client and broker
+	//k_msleep(25000);
+	while (!wifiConnected) {
+		//do nothing
+		k_msleep(1000);
+	}
+	printk("==MQTT START==\r\n");
+	//printk("==FW Ver: %d.%d\r\n", SIMPLE_HTTP_OTA_MAJOR_VERSION, SIMPLE_HTTP_OTA_MINOR_VERSION);
+	//k_msleep(15000);
+#if defined(CONFIG_DNS_RESOLVER)
+	rc = get_mqtt_broker_addrinfo();
+	if (rc) {
+		printk("Failed to resolve. Thread ended\r\n");
+		return 0;
+	}
+#endif
+
     mqtt_client_init(&client_ctx);
     broker_init();
+
     // password and user for tago dashbaord
-    struct mqtt_utf8 password = MQTT_UTF8_LITERAL("260092b0-8ce9-45a0-9db2-402b4362e14c");
-    struct mqtt_utf8 user = MQTT_UTF8_LITERAL("Token");
+    struct mqtt_utf8 password;
+    struct mqtt_utf8 user;
+
+	password.utf8 = (uint8_t *)"260092b0-8ce9-45a0-9db2-402b4362e14c";
+	password.size = strlen("260092b0-8ce9-45a0-9db2-402b4362e14c");
+
+	user.utf8 = (uint8_t *)"Token";
+	user.size = strlen("Token");
 
     /* MQTT client configuration */
     client_ctx.broker = &broker;
@@ -252,20 +495,91 @@ int thread_mqtt_entry(void) {
     client_ctx.rx_buf_size = sizeof(rx_buf);
     client_ctx.tx_buf = tx_buf;
     client_ctx.tx_buf_size = sizeof(tx_buf);
-#if defined(CONFIG_SOCKS)
-	mqtt_client_set_proxy(client_ctx, &socks5_proxy,
-			      socks5_proxy.sa_family == AF_INET ?
-			      sizeof(struct sockaddr_in) :
-			      sizeof(struct sockaddr_in6));
-#endif
-    k_msleep(13000);
+
+
     // connect to broker - tago io
-    printk("Attempting to connect to MQTT Broker\r\n");
-    connect_to_broker(&client_ctx);
-    PRINT_RESULT("try_to_connect", val);
-	SUCCESS_OR_EXIT(val);
+	printk("Attempting to connect to MQTT Broker\r\n");
+	connect_to_broker(&client_ctx);
+	
+	subscribe_period(&client_ctx);
+	subscribe_ota(&client_ctx);
     while (1) {
-        k_msleep(500);
+		if (state == SLEEP) {
+			timeout = mqtt_keepalive_time_left(&client_ctx);
+			//printk("TIMEOUT: %d\r\n", timeout);
+			rc = zsock_poll(&fds[0], 1u, timeout);
+			if (rc >= 0) {
+				if (fds->revents & ZSOCK_POLLIN) {
+					rc = mqtt_input(&client_ctx);
+					if (rc != 0) {
+						LOG_ERR("Failed to read MQTT input: %d", rc);
+						
+					} 
+				} 
+				if (fds->revents & (ZSOCK_POLLHUP | ZSOCK_POLLERR)) {
+					LOG_ERR("Socket closed/error");
+					
+				}
+				rc = mqtt_live(&client_ctx);
+				if ((rc != 0) && (rc != -EAGAIN)) {
+					LOG_ERR("Failed to live MQTT: %d", rc);
+					
+				}
+			} else {
+				LOG_ERR("poll failed: %d", rc);
+				
+			}
+		} else {
+			timeout = mqtt_keepalive_time_left(&client_ctx);
+			//printk("TIMEOUT: %d\r\n", timeout);
+			rc = zsock_poll(&fds[0], 1u, 1000);
+			if (rc >= 0) {
+				if (fds->revents & ZSOCK_POLLIN) {
+					rc = mqtt_input(&client_ctx);
+					if (rc != 0) {
+						LOG_ERR("Failed to read MQTT input: %d", rc);
+						
+					} 
+				} 
+				if (fds->revents & (ZSOCK_POLLHUP | ZSOCK_POLLERR)) {
+					LOG_ERR("Socket closed/error");
+					
+				}
+				rc = mqtt_live(&client_ctx);
+				if ((rc != 0) && (rc != -EAGAIN)) {
+					LOG_ERR("Failed to live MQTT: %d", rc);
+					
+				}
+			} else {
+				LOG_ERR("poll failed: %d", rc);
+				
+			}
+
+
+		}
+		//k_msleep(500);
+		if (flagOta) {
+			// initiate ota
+			ret = simple_http_ota_run();
+			k_msleep(100);
+			if (ret < 0) {
+				//ota failed: try again
+				flagOta = 1;
+			} else {
+				flagOta = 0;
+				sys_reboot(1);
+			}
+			
+			
+		}
+		if (sensorTransmit) {
+			rc = publish(&client_ctx, MQTT_QOS_1_AT_LEAST_ONCE, topic);
+			PRINT_RESULT("mqtt_publish", rc);
+			sensorTransmit = false;			
+		}
+
+		//k_msleep(1000);
+
     }
 
 }

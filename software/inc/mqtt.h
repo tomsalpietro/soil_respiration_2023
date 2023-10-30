@@ -12,4 +12,12 @@
 
 int thread_mqtt_entry(void);
 
+struct fota_JSON {
+    const char *unit;
+    const char  *value;
+};
+
+extern struct fota_JSON fotaResults;
+
+
 #endif

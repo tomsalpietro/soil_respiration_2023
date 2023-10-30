@@ -12,8 +12,10 @@
 
 #include <zephyr/kernel.h>
 
-extern struct k_sem wifiSem;
-extern struct k_sem ipv4Sem;
+//extern struct k_sem wifiSem;
+//extern struct k_sem ipv4Sem;
+
+extern bool wifiConnected;
 
 void thread_wifi_entry(void);
 

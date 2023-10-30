@@ -17,9 +17,12 @@ include_directories(
 target_sources(app PRIVATE
     src/main.c
     inc/wifi.c
-    #inc/mqtt.c
-    inc/sockets.c
+    inc/mqtt.c
+    #inc/sockets.c
     inc/sensor.c
     lib/scd30.c
     lib/sensirion_common.c
+    inc/ota.c
+    inc/motor.c
+    inc/ble.c
 )

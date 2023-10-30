@@ -8,29 +8,38 @@
  * */
 
 #include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/init.h>
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/wifi_mgmt.h>
 #include <zephyr/net/net_event.h>
 #include <zephyr/net/net_mgmt.h>
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <zephyr/logging/log.h>
+#include "ota.h"
 LOG_MODULE_DECLARE(soil_respiration, LOG_LEVEL_DBG);
 
-#define NET_SSID        "Toms Phone"
-#define PSK             "tomsalpietro"
+//#define NET_SSID        "fbgateway"
+//#define PSK             "farmbotgateway!"
+#define NET_SSID            "Toms Phone"
+#define PSK                 "tomsalpietro"
+
 
 static struct net_mgmt_event_callback wifiCallback;
-static struct net_mgmt_event_callback ipv4Callback;
+//static struct net_mgmt_event_callback ipv4Callback;
 
 //static K_SEM_DEFINE(wifiSem, 0, 1);
 //static K_SEM_DEFINE(ipv4Sem, 0, 1);
 
 struct k_sem wifiSem;
-struct k_sem ipv4Sem;
+//struct k_sem ipv4Sem;
+bool wifiConnected = false;
 
 
 static struct net_mgmt_event_callback wifi_cb;
-static struct net_mgmt_event_callback ipv4_cb;
+//static struct net_mgmt_event_callback ipv4_cb;
 
 
 /*
@@ -42,12 +51,13 @@ static void handle_wifi_connect_cb(struct net_mgmt_event_callback *cb) {
 
     if (status->status)
     {
-        printk("Connection request failed (%d)\n", status->status);
+        LOG_ERR("WIFI - Connection request failed (%d)\n", status->status);
     }
     else
     {
-        printk("Connected\n");
+        LOG_INF("Connected\n");
         k_sem_give(&wifiSem);
+        wifiConnected = true;
     }
 }
 
@@ -66,13 +76,14 @@ static void handle_wifi_disconnect_cb(struct net_mgmt_event_callback *cb) {
     {
         printk("Disconnected\n");
         k_sem_take(&wifiSem, K_NO_WAIT);
+        wifiConnected = false;
     }
 }
 
 /*
     IPv4 handler for assigning IP adress callback
 */
-static void handle_ipv4_cb(struct net_if *iface) {
+/*static void handle_ipv4_cb(struct net_if *iface) {
 
     int i = 0;
 
@@ -99,7 +110,7 @@ static void handle_ipv4_cb(struct net_if *iface) {
         }
 
         k_sem_give(&ipv4Sem);
-}
+}*/
 
 /*
     request wifi status
@@ -131,9 +142,9 @@ void wifi_status(void) {
 */
 void wifi_connect(void) {
 
-    struct net_if *iface = net_if_get_default();
+    struct net_if *iface = net_if_get_first_wifi();
 
-    struct wifi_connect_req_params wifi_params = {0};
+    struct wifi_connect_req_params wifi_params = { 0 };
 
     wifi_params.ssid = NET_SSID;
     wifi_params.psk = PSK;
@@ -149,6 +160,8 @@ void wifi_connect(void) {
     if (net_mgmt(NET_REQUEST_WIFI_CONNECT, iface, &wifi_params, sizeof(struct wifi_connect_req_params)))
     {
         printk("WiFi Connection Request Failed\n");
+    } else {
+        printk("Connection Requested...\r\n");
     }
 }
 
@@ -178,10 +191,10 @@ static void wifi_mgmt_event_handler(struct net_mgmt_event_callback *cb, uint32_t
         case NET_EVENT_WIFI_DISCONNECT_RESULT:
             handle_wifi_disconnect_cb(cb);
             break;
-
+/*
         case NET_EVENT_IPV4_ADDR_ADD:
             handle_ipv4_cb(iface);
-            break;
+            break;*/
 
         default:
             break;
@@ -196,30 +209,40 @@ static void wifi_mgmt_event_handler(struct net_mgmt_event_callback *cb, uint32_t
 void thread_wifi_entry(void) {
     
     printk("--START UP--\r\n");
+    
+    simple_http_ota_init();
 
     //initialise semaphores
     k_sem_init(&wifiSem, 0, 1);
-    k_sem_init(&ipv4Sem, 0, 1);
+    //k_sem_init(&ipv4Sem, 0, 1);
 
     //initialise callbacks
-    net_mgmt_init_event_callback(&ipv4_cb, wifi_mgmt_event_handler, NET_EVENT_IPV4_ADDR_ADD);
+    //net_mgmt_init_event_callback(&ipv4_cb, wifi_mgmt_event_handler, NET_EVENT_IPV4_ADDR_ADD);
     net_mgmt_init_event_callback(&wifi_cb, wifi_mgmt_event_handler,
                                  NET_EVENT_WIFI_CONNECT_RESULT | NET_EVENT_WIFI_DISCONNECT_RESULT);
 
     net_mgmt_add_event_callback(&wifi_cb);
-    net_mgmt_add_event_callback(&ipv4_cb);
+    //net_mgmt_add_event_callback(&ipv4_cb);
 
     //connect to network
     wifi_connect();
     k_sem_take(&wifiSem, K_FOREVER);
     //k_sleep(K_SECONDS(5));
 
-    k_sem_take(&ipv4Sem, K_FOREVER);
+    //k_sem_take(&ipv4Sem, K_FOREVER);
 
     printk("Ready...\n\n");
     wifi_status();
+    //uint8_t i = 0;
     while (1) {
-        k_msleep(500);
+        //printk("running: %d\r\n", i);
+        //i++;
+        if (!wifiConnected) {
+            wifi_connect();
+            k_sem_take(&wifiSem, K_FOREVER);
+            wifi_status();
+        }
+        k_msleep(1000);
     }
 
     k_sleep(K_SECONDS(15));

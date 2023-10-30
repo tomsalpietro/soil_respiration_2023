@@ -14,5 +14,6 @@ void thread_sensor_entry(void);
 
 
 extern float sensorData[3];
+extern bool sensorTransmit;
 
 #endif
